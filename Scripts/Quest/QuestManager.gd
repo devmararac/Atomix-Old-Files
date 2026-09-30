@@ -17,7 +17,8 @@ signal quest_completed(quest_id: String)
 var quest_database := {
 	"quest_hydrogen_001": preload("res://Resources/Quest/quest_hydrogen_001.tres"),
 	"quest_collect_iron": preload("res://Resources/Quest/quest_collect_iron.tres"),
-	"story_quest_explore_dungeon": preload("res://Resources/Quest/explore_dungeon.tres")
+	"story_quest_explore_dungeon": preload("res://Resources/Quest/explore_dungeon.tres"),
+	"quest_chain_001": preload("res://Resources/Quest/quest_chain.tres")
 }
 
 # -------------------------------------------------------------------
@@ -36,6 +37,9 @@ var tracked_quest: Quest = null
 #Add quest
 func _ready():
 	Dialogic.signal_event.connect(_on_dialogic_signal)
+
+func refresh_npc_quest_indicators() -> void:
+	NpcManager.refresh_quest_indicators()
 
 func _on_dialogic_signal(argument: String):
 
@@ -70,6 +74,28 @@ func accept_quest(quest_id: String) -> void:
 
 	quest_updated.emit(quest.quest_id)
 	quest_list_updated.emit()
+	refresh_npc_quest_indicators()
+	# ========================================================
+	# QUEST ACCEPTANCE SAVE
+	# ========================================================
+	#
+	# Save ONLY the quest information here.
+	#
+	# This prevents accepting the first quest from creating
+	# a full game checkpoint at the intro location.
+	# ========================================================
+
+	print(
+		"[QuestManager] Requesting quest-only automatic save after quest acceptance..."
+	)
+
+	await SaveManager.auto_save_quest_data(
+		"Accepted quest: " + quest.quest_id
+	)
+
+	print(
+		"[QuestManager] Quest acceptance quest-only automatic save completed."
+	)
 
 func start_story_quest(quest_id: String) -> void:
 	if active_quests.has(quest_id):
@@ -124,28 +150,108 @@ func debug_quests() -> void:
 #Player Rewards
 func handle_quest_completion(quest: Quest) -> void:
 
-	# Give rewards
+	# ========================================================
+	# GIVE REWARDS
+	# ========================================================
+
 	for reward in quest.rewards:
+
 		match reward.reward_type:
+
 			"coins":
-				CurrencyManager.add_coins(reward.reward_amount)
+				CurrencyManager.add_coins(
+					reward.reward_amount
+				)
 
-	# Mark as completed
-	update_quest(quest.quest_id, QuestState.Type.COMPLETED)
 
-	# Move from active -> completed
-	active_quests.erase(quest.quest_id)
+	# ========================================================
+	# MARK AS COMPLETED
+	# ========================================================
+
+	update_quest(
+		quest.quest_id,
+		QuestState.Type.COMPLETED
+	)
+
+
+	# ========================================================
+	# MOVE ACTIVE -> COMPLETED
+	# ========================================================
+
+	active_quests.erase(
+		quest.quest_id
+	)
+
 	completed_quests[quest.quest_id] = quest
 
-	# If this quest was being tracked,
-	# automatically track another active quest.
+
+	# ========================================================
+	# CHANGE TRACKED QUEST
+	# ========================================================
+
 	if tracked_quest == quest:
+
 		tracked_quest = null
 
 		if active_quests.size() > 0:
-			set_tracked_quest(active_quests.values()[0])
-	quest_completed.emit(quest.quest_id)
+
+			set_tracked_quest(
+				active_quests.values()[0]
+			)
+
+
+	# ========================================================
+	# SIGNALS
+	# ========================================================
+
+	quest_completed.emit(
+		quest.quest_id
+	)
+
 	quest_list_updated.emit()
+
+
+	# ========================================================
+	# SAVE AFTER QUEST COMPLETION
+	# ========================================================
+
+	if quest.quest_id == "story_quest_explore_dungeon":
+
+		# The first story quest happens during the intro.
+		# Save only the quest data so we do NOT create
+		# a full game checkpoint at the intro location.
+
+		print(
+			"[QuestManager] Initial story quest completed."
+		)
+
+		print(
+			"[QuestManager] Requesting quest-only automatic save..."
+		)
+
+		await SaveManager.auto_save_quest_data(
+			"Completed quest: " + quest.quest_id
+		)
+
+		print(
+			"[QuestManager] Initial story quest completion saved."
+		)
+
+	else:
+
+		# Normal quests create a full game checkpoint.
+
+		print(
+			"[QuestManager] Requesting automatic save after quest completion..."
+		)
+
+		await SaveManager.auto_save(
+			"Completed quest: " + quest.quest_id
+		)
+
+		print(
+			"[QuestManager] Quest completion automatic save completed."
+		)
 
 func set_tracked_quest(quest: Quest) -> void:
 	if tracked_quest == quest:
@@ -200,8 +306,28 @@ func notify(type: ObjectiveType.Type, target_id: String, amount: int = 1) -> voi
 					objective.id
 				)
 
+				print(
+					"[QuestManager] Quest progress updated: ",
+					quest.quest_id,
+					" | Objective: ",
+					objective.id
+				)
+
+				print(
+					"[QuestManager] Requesting automatic save after quest progress..."
+				)
+
+				await SaveManager.auto_save(
+					"Quest progress: " + quest.quest_id
+				)
+
+				print(
+					"[QuestManager] Quest progress automatic save completed."
+				)
+
 			if quest.is_completed():
 				handle_quest_completion(quest)
+		refresh_npc_quest_indicators()
 
 
 # ============================================================
@@ -338,3 +464,4 @@ func load_save_data(data: Dictionary) -> void:
 		tracked_quest_changed.emit(tracked_quest)
 
 	quest_list_updated.emit()
+	refresh_npc_quest_indicators()

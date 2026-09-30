@@ -1,9 +1,12 @@
 extends Control
 
+const MINIGAMES_SCENE = preload("res://Scenes/UI/minigames.tscn")
+
 @onready var auth_panel = $AuthPanel
 @onready var buttons_start = $Panel/Start
 @onready var buttons_cont = $Panel/Continue
 
+@onready var atomix_keyboard = $AtomiXKeyboard
 @onready var email_input = $AuthPanel/Email/EmailInput
 @onready var password_input = $AuthPanel/Password/PasswordInput
 @onready var status_label = $AuthPanel/StatusLabel
@@ -26,7 +29,10 @@ func _ready() -> void:
 	StudentDataManager.student_created.connect(_on_student_created)
 	StudentDataManager.student_error.connect(_on_student_error)
 
-
+	# AtomiX custom keyboard
+	email_input.focus_entered.connect(_on_email_input_focus_entered)
+	password_input.focus_entered.connect(_on_password_input_focus_entered)
+	
 func _on_login_success(auth_result):
 	login_in_progress = false
 
@@ -36,6 +42,12 @@ func _on_login_success(auth_result):
 	print("[MainMenu] Checking user role...")
 
 	call_deferred("_check_user_role")
+
+func _on_email_input_focus_entered() -> void:
+	atomix_keyboard.show_for(email_input)
+
+func _on_password_input_focus_entered() -> void:
+	atomix_keyboard.show_for(password_input)
 
 func _check_user_role() -> void:
 	print("[MainMenu] Getting user role...")
@@ -105,8 +117,7 @@ func _on_student_error(error) -> void:
 func _on_start_pressed() -> void:
 	await get_tree().create_timer(0.5).timeout
 	get_tree().change_scene_to_file(
-		"res://Scenes/Cutscenes/classroom_cutscene.tscn"
-		
+		"res://Scenes/UI/CharacterSetup.tscn"
 	)
 
 
@@ -151,28 +162,6 @@ func _on_login_button_pressed():
 
 	AuthManager.login(email, password)
 
-
-func _on_signup_button_pressed():
-	var email = email_input.text.strip_edges()
-	var password = password_input.text
-
-	if email.is_empty():
-		status_label.text = "Please enter your email."
-		return
-
-	if password.is_empty():
-		status_label.text = "Please enter your password."
-		return
-
-	if password.length() < 6:
-		status_label.text = "Password must be at least 6 characters."
-		return
-
-	status_label.text = "Creating account..."
-
-	AuthManager.signup(email, password)
-
-
 func _on_login_failed(message):
 	login_in_progress = false
 
@@ -188,3 +177,39 @@ func _on_signup_success(auth_result):
 
 	# Treat successful signup as a successful login.
 	_on_login_success(auth_result)
+
+func _input(event: InputEvent) -> void:
+	if not atomix_keyboard.visible:
+		return
+
+	var tap_position := Vector2.ZERO
+
+	if event is InputEventMouseButton:
+		if event.button_index != MOUSE_BUTTON_LEFT or not event.pressed:
+			return
+
+		tap_position = event.position
+
+	elif event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+
+		tap_position = event.position
+
+	else:
+		return
+
+	if atomix_keyboard.get_global_rect().has_point(tap_position):
+		return
+
+	if email_input.get_global_rect().has_point(tap_position):
+		return
+
+	if password_input.get_global_rect().has_point(tap_position):
+		return
+
+	atomix_keyboard.hide_keyboard()
+
+func _on_button_pressed() -> void:
+	var minigames = MINIGAMES_SCENE.instantiate()
+	add_child(minigames)

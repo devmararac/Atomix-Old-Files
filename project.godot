@@ -45,24 +45,38 @@ FirebaseManager="*uid://c6sppeo4qpee3"
 StudentDataManager="*uid://cg20foxv38bnr"
 TeacherDataManager="*uid://1fvwit8ssfmp"
 FirebaseConfig="*uid://djexcsoc68yt2"
+PlayerManager="*uid://wwnlhr1cbhww"
+GroupQuizManager="*uid://hiwxq1l6pmsv"
+FusionManager="*uid://bmnqlysm3ka2n"
 
 [dialogic]
 
 directories/dch_directory={
+"Alfred": "res://Resources/Dialouges/Dialogic/Characters/Alfred.dch",
+"Andrew": "res://Resources/Dialouges/Dialogic/Characters/Andrew.dch",
+"Angelo": "res://Resources/Dialouges/Dialogic/Characters/Angelo.dch",
 "Anne": "res://Resources/Dialouges/Dialogic/Characters/Anne.dch",
 "Beryll": "res://Resources/Dialouges/Dialogic/Characters/Beryll.dch",
+"Deejhay": "res://Resources/Dialouges/Dialogic/Characters/Deejhay.dch",
 "Dianne": "res://Resources/Dialouges/Dialogic/Characters/Dianne.dch",
+"Elysa": "res://Resources/Dialouges/Dialogic/Characters/Elysa.dch",
 "Felix": "res://Resources/Dialouges/Dialogic/Characters/Felix.dch",
 "Garry": "res://Resources/Dialouges/Dialogic/Characters/Garry.dch",
 "Player": "res://Resources/Dialouges/Dialogic/Characters/Player.dch",
 "Prof_Andrew": "res://Resources/Dialouges/Dialogic/Characters/Prof_Andrew.dch",
+"Trishania": "res://Resources/Dialouges/Dialogic/Characters/Trishania.dch",
 "linos": "res://Resources/Dialouges/Dialogic/Characters/linos.dch"
 }
 directories/dtl_directory={
+"Intro": "res://Resources/Dialouges/Dialogic/Timeline/Quest/Quest_chain_001/Intro.dtl",
 "StartingCutscene": "res://Resources/Dialouges/Dialogic/Timeline/StartingCutscene.dtl",
 "atomonia_entrance": "res://Resources/Dialouges/Dialogic/Timeline/atomonia_entrance.dtl",
+"atomonia_expert": "res://Resources/Dialouges/Dialogic/Timeline/Quest/Quest_chain_001/atomonia_expert.dtl",
+"battle_announce": "res://Resources/Dialouges/Dialogic/Timeline/battle_announce.dtl",
 "beryll_introduction": "res://Resources/Dialouges/Dialogic/Timeline/beryll_introduction.dtl",
 "beryll_introduction2": "res://Resources/Dialouges/Dialogic/Timeline/beryll_introduction2.dtl",
+"dianne_line": "res://Resources/Dialouges/Dialogic/Timeline/Tutorial Scene/dianne_line.dtl",
+"dianne_line2": "res://Resources/Dialouges/Dialogic/Timeline/Tutorial Scene/dianne_line2.dtl",
 "dianne_test": "res://Resources/Dialouges/Dialogic/Timeline/dianne_test.dtl",
 "intro": "res://Resources/Dialouges/Dialogic/Timeline/intro.dtl",
 "linos_hydrogen_in_progress": "res://Resources/Dialouges/Dialogic/Timeline/linos_hydrogen_in_progress.dtl",
@@ -80,7 +94,9 @@ layout/style_directory={
 layout/style_list=["res://Resources/Dialouges/Dialogic/Styles/Dialogic_Style.tres", "res://Resources/Dialouges/Dialogic/Styles/text_bubble.tres"]
 glossary/default_case_sensitive=true
 layout/default_style="res://Resources/Dialouges/Dialogic/Styles/text_bubble.tres"
-variables={}
+variables={
+"battle_message": "This is a battle announcement!"
+}
 extensions_folder="res://addons/dialogic_additions"
 text/letter_speed=0.01
 text/initial_text_reveal_skippable=true
@@ -125,7 +141,7 @@ window/canvas_textures/default_texture_filter=1
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dialogic/plugin.cfg", "res://addons/godot-firebase/plugin.cfg", "res://addons/virtual_joystick/plugin.cfg")
+enabled=PackedStringArray("res://addons/dialogic/plugin.cfg", "res://addons/godot-firebase/plugin.cfg", "res://addons/spritefusion/plugin.cfg", "res://addons/virtual_joystick/plugin.cfg")
 
 [global]
 

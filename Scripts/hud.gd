@@ -11,6 +11,15 @@ const GAME_MENU = preload("res://Scenes/UI/game_menu.tscn")
 
 func _ready() -> void:
 	quest_log_panel.hide()
+	
+	Dialogic.timeline_started.connect(_on_dialogue_started)
+	Dialogic.timeline_ended.connect(_on_dialogue_ended)
+
+func _on_dialogue_started() -> void:
+	visible = false
+
+func _on_dialogue_ended() -> void:
+	visible = true
 
 func show_hide_log() -> void:
 	SfxManager.play_click()
@@ -35,6 +44,12 @@ func _on_load_pressed() -> void:
 	
 
 func _on_menu_pressed() -> void:
+
+	# Do not open the Game Menu while another UI is active
+	if get_tree().get_first_node_in_group("CraftingUI") != null:
+		print("[HUD] Game Menu blocked because Crafting UI is open.")
+		return
+
 	var menu = GAME_MENU.instantiate()
 	menu.hud = self
 	get_tree().current_scene.add_child(menu)

@@ -23,7 +23,10 @@
 [ext_resource type="Texture2D" uid="uid://b5fsn2ti1cki0" path="res://Assets/UX/Buttons/On-Pressed/run_button_pressed.png" id="15_vghoh"]
 [ext_resource type="Texture2D" uid="uid://b7wxk373gv8ex" path="res://Assets/UX/HUD/Panels/atomon_sprite.png" id="16_c225n"]
 [ext_resource type="AudioStream" uid="uid://bssvvaqt0wwfo" path="res://Assets/Music/Run Bunny Run.mp3" id="16_gwo5a"]
+[ext_resource type="Texture2D" uid="uid://ch326y5f315s" path="res://Assets/UX/Buttons/Disabled/fusion_button.png" id="20_qyglk"]
 [ext_resource type="Script" uid="uid://vt7nk5gwohmi" path="res://Battle/BattleController.gd" id="21_4cw33"]
+[ext_resource type="PackedScene" uid="uid://djafjw6fwxvtx" path="res://NPC/npc_base.tscn" id="25_4xqci"]
+[ext_resource type="Resource" uid="uid://dy0w3huok6wvi" path="res://Resources/NPCs/TRES/elysa.tres" id="26_qyglk"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_c225n"]
 load_path = "res://.godot/imported/atomon_sprite.png-8d7a2f2bcbae16fdd9a5c61d790751e7.ctex"
@@ -90,7 +93,6 @@ offset_bottom = 0.07998657
 position = Vector2(25, 75)
 
 [node name="BattleEffects" type="Node2D" parent="BattleField" unique_id=1118640751]
-visible = false
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1252201629]
 
@@ -551,6 +553,7 @@ custom_minimum_size = Vector2(220, 67)
 layout_mode = 2
 texture_normal = ExtResource("10_k0oc4")
 texture_pressed = ExtResource("11_ejqjo")
+texture_disabled = ExtResource("20_qyglk")
 stretch_mode = 0
 
 [node name="Atomons" type="TextureButton" parent="CommandUI/GridContainer" unique_id=1591039315]
@@ -570,6 +573,11 @@ stretch_mode = 0
 [node name="BattleController" type="Node" parent="." unique_id=1091136324]
 script = ExtResource("21_4cw33")
 
+[node name="BattleAnnouncer" parent="." unique_id=747614588 instance=ExtResource("25_4xqci")]
+position = Vector2(89, 211.00002)
+scale = Vector2(6, 6)
+data = ExtResource("26_qyglk")
+
 [connection signal="pressed" from="CanvasLayer/HUD/FriendlyAtomonInfo/TextureButton" to="." method="_on_texture_button_pressed"]
 [connection signal="pressed" from="CanvasLayer/MoveMenu/CommandPanel2/CloseButton" to="." method="_on_close_button_pressed"]
 [connection signal="pressed" from="CanvasLayer/MoveMenu/VBoxContainer/Move1" to="." method="_on_move_1_pressed"]
@@ -577,5 +585,6 @@ script = ExtResource("21_4cw33")
 [connection signal="pressed" from="CanvasLayer/MoveMenu/VBoxContainer/Move3" to="." method="_on_move_3_pressed"]
 [connection signal="pressed" from="CanvasLayer/MoveMenu/VBoxContainer/Move4" to="." method="_on_move_4_pressed"]
 [connection signal="pressed" from="CommandUI/GridContainer/Attack" to="." method="_on_attack_pressed"]
+[connection signal="pressed" from="CommandUI/GridContainer/Fusion" to="." method="_on_fusion_pressed"]
 [connection signal="pressed" from="CommandUI/GridContainer/Atomons" to="." method="_on_atomons_pressed"]
 [connection signal="pressed" from="CommandUI/GridContainer/Run" to="." method="_on_run_pressed"]

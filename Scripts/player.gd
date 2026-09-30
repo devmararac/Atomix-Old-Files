@@ -11,7 +11,12 @@ var footstep_timer := 0.0
 @onready var attack_sound = $AttackSound
 var cardinal_direction: Vector2 = Vector2.DOWN
 var direction: Vector2 = Vector2.ZERO
-var move_speed: float = 70.0
+
+@onready var display_name = $NameContainer/Label
+@export var move_speed: float = 70.0
+@export var acceleration: float = 500.0
+@export var deceleration: float = 700.0
+
 var state: String = "idle"
 var can_use_doors: bool = false
 var can_move = true
@@ -24,8 +29,31 @@ var is_playing_cutscene_animation := false
 @onready var anim: AnimatedSprite2D = $AnimatedSprite2D
 @onready var ray_cast_2d = $RayCast2D
 
+func apply_selected_character() -> void:
+	# Apply selected character sprite
+	if PlayerManager.selected_character != null:
+		anim.sprite_frames = PlayerManager.selected_character.sprite_frames
+		anim.play("idle")
+
+		print(
+			"[Player] Character applied: ",
+			PlayerManager.selected_character.character_name
+		)
+
+	# Apply display name
+	if PlayerManager.display_name != "":
+		display_name.text = PlayerManager.display_name
+
+		print(
+			"[Player] Display name applied: ",
+			PlayerManager.display_name
+		)
 
 func _ready() -> void:
+	direction = Vector2.ZERO
+	velocity = Vector2.ZERO
+	apply_selected_character()
+
 	call_deferred("apply_spawn")
 	call_deferred("enable_doors")
 	global.player = self
@@ -76,10 +104,27 @@ func play_cutscene_footstep():
 func _on_dialogue_finished():
 	can_move = true
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if can_move:
-		velocity = direction * move_speed
+		var target_velocity := direction * move_speed
+
+		if direction != Vector2.ZERO:
+			velocity = velocity.move_toward(
+				target_velocity,
+				acceleration * delta
+			)
+		else:
+			velocity = velocity.move_toward(
+				Vector2.ZERO,
+				deceleration * delta
+			)
+
 		move_and_slide()
+	else:
+		velocity = velocity.move_toward(
+			Vector2.ZERO,
+			deceleration * delta
+		)
 
 
 func get_input() -> void:
@@ -200,6 +245,33 @@ func handle_interaction():
 	elif target.is_in_group("QuestObjects"):
 		target.interact()
 
+func move_to_cutscene_target(target: Marker2D):
+	if target == null:
+		return
+
+	is_cutscene_moving = true
+	can_move = false
+	direction = Vector2.ZERO
+
+	while global_position.distance_to(target.global_position) > 3.0:
+		var target_direction := global_position.direction_to(target.global_position)
+
+		velocity = target_direction * move_speed
+		move_and_slide()
+
+		# Update facing direction
+		if abs(target_direction.x) > abs(target_direction.y):
+			anim.flip_h = target_direction.x < 0
+
+		anim.play("walk")
+
+		await get_tree().physics_frame
+
+	velocity = Vector2.ZERO
+	is_cutscene_moving = false
+
+	anim.play("idle")
+
 func update_interaction_highlight():
 	var target = ray_cast_2d.get_collider()
 
@@ -232,3 +304,12 @@ func face_left():
 
 func face_right():
 	anim.flip_h = false
+
+func face_npc(target: Node2D):
+	if target == null:
+		return
+
+	if target.global_position.x < global_position.x:
+		face_left()
+	else:
+		face_right()
